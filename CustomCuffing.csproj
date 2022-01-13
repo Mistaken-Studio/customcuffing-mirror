@@ -33,30 +33,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Mistaken.API">
-      <HintPath>$(MISTAKEN_REFERENCES)\0Mistaken.API.dll</HintPath>
-    </Reference>
-    <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>$(MISTAKEN_REFERENCES)\Assembly-CSharp-firstpass.dll</HintPath>
-    </Reference>
-    <Reference Include="Assembly-CSharp-Publicized">
-      <HintPath>$(MISTAKEN_REFERENCES)\Assembly-CSharp-Publicized.dll</HintPath>
-    </Reference>
-    <Reference Include="Exiled.API">
-      <HintPath>$(MISTAKEN_REFERENCES)\Exiled.API.dll</HintPath>
-    </Reference>
-    <Reference Include="Exiled.Events">
-      <HintPath>$(MISTAKEN_REFERENCES)\Exiled.Events.dll</HintPath>
-    </Reference>
-    <Reference Include="Mirror">
-      <HintPath>$(MISTAKEN_REFERENCES)\Mirror.dll</HintPath>
-    </Reference>
-    <Reference Include="Mistaken.RoundLogger">
-      <HintPath>$(MISTAKEN_REFERENCES)\Mistaken.RoundLogger.dll</HintPath>
-    </Reference>
-    <Reference Include="Mistaken.Updater">
-      <HintPath>$(MISTAKEN_REFERENCES)\Mistaken.Updater.dll</HintPath>
-    </Reference>
+    <Reference Include="0Mistaken.API" HintPath="$(MISTAKEN_REFERENCES)\0Mistaken.API.dll"/>
+    <Reference Include="Assembly-CSharp-firstpass" HintPath="$(MISTAKEN_REFERENCES)\Assembly-CSharp-firstpass.dll"/>
+    <Reference Include="Assembly-CSharp-Publicized" HintPath="$(MISTAKEN_REFERENCES)\Assembly-CSharp-Publicized.dll"/>
+    <Reference Include="Exiled.API" HintPath="$(MISTAKEN_REFERENCES)\Exiled.API.dll"/>
+    <Reference Include="Exiled.Events" HintPath="$(MISTAKEN_REFERENCES)\Exiled.Events.dll"/>
+    <Reference Include="Mirror" HintPath="$(MISTAKEN_REFERENCES)\Mirror.dll"/>
+    <Reference Include="Mistaken.RoundLogger" HintPath="$(MISTAKEN_REFERENCES)\Mistaken.RoundLogger.dll"/>
+    <Reference Include="Mistaken.Updater" HintPath="$(MISTAKEN_REFERENCES)\Mistaken.Updater.dll"/>
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(MISTAKEN_REFERENCES)\UnityEngine.CoreModule.dll"/>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -64,9 +49,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="UnityEngine.CoreModule">
-      <HintPath>$(MISTAKEN_REFERENCES)\UnityEngine.CoreModule.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config.cs" />
