@@ -1,9 +1,10 @@
-﻿// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 // <copyright file="CustomCuffingHandler.cs" company="Mistaken">
 // Copyright (c) Mistaken. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
 
+using System.Collections.Generic;
 using Exiled.API.Features;
 using Exiled.Events.EventArgs;
 using MEC;
@@ -11,7 +12,6 @@ using Mistaken.API;
 using Mistaken.API.Diagnostics;
 using Mistaken.API.Extensions;
 using Mistaken.API.GUI;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Mistaken.CustomCuffing
@@ -41,11 +41,12 @@ namespace Mistaken.CustomCuffing
 
         private void Player_Handcuffing(HandcuffingEventArgs ev)
         {
-            if (!CuffedLimit.ContainsKey(ev.Cuffer))
+            if (!this.CuffedLimit.ContainsKey(ev.Cuffer))
             {
-                CuffedLimit.Add(ev.Cuffer, 0);
+                this.CuffedLimit.Add(ev.Cuffer, 0);
             }
-            CuffedLimit.TryGetValue(ev.Cuffer, out int limit);
+
+            this.CuffedLimit.TryGetValue(ev.Cuffer, out int limit);
             if (limit >= PluginHandler.Instance.Config.CuffLimit)
             {
                 ev.IsAllowed = false;
@@ -54,9 +55,9 @@ namespace Mistaken.CustomCuffing
 
             Timing.CallDelayed(1, () =>
             {
-                CuffedLimit[ev.Cuffer]++;
-                Timing.RunCoroutine(CuffedPlayerInfo(ev.Target));
-                Timing.RunCoroutine(CuffedGUI(ev.Cuffer));
+                this.CuffedLimit[ev.Cuffer]++;
+                Timing.RunCoroutine(this.CuffedPlayerInfo(ev.Target));
+                Timing.RunCoroutine(this.CuffedGUI(ev.Cuffer));
             });
         }
 
@@ -66,6 +67,7 @@ namespace Mistaken.CustomCuffing
             {
                 ev.IsAllowed = PluginHandler.Instance.Config.AllowScps;
             }
+
             if (ev.Target.Cuffer.IsNTF && ev.Cuffer.IsNTF && ev.Cuffer != ev.Target.Cuffer)
             {
                 ev.IsAllowed = PluginHandler.Instance.Config.AllowOtherMtfs;
@@ -82,6 +84,7 @@ namespace Mistaken.CustomCuffing
                     cuffedtargets++;
                 }
             }
+
             while (cuffer.IsConnected && cuffedtargets != 0)
             {
                 try
@@ -96,7 +99,7 @@ namespace Mistaken.CustomCuffing
                         }
                     }
 
-                    CuffedLimit.TryGetValue(cuffer, out int limit);
+                    this.CuffedLimit.TryGetValue(cuffer, out int limit);
                     if (cuffed.Count != 0)
                     {
                         cuffer.SetGUI($"cuffer-{cuffer.Nickname}", PseudoGUIPosition.BOTTOM, $"Cuffed Players: (<color=yellow>{limit}/{PluginHandler.Instance.Config.CuffLimit}</color>)<br><br>{string.Join("<br>", cuffed)}");
@@ -130,7 +133,7 @@ namespace Mistaken.CustomCuffing
                     else
                     {
                         target.CustomInfo = string.Empty;
-                        CuffedLimit[target.Cuffer]--;
+                        this.CuffedLimit[target.Cuffer]--;
                         break;
                     }
                 }
