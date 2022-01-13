@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -34,28 +34,28 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Mistaken.API">
-      <HintPath>..\dependencies-master\0Mistaken.API.dll</HintPath>
+      <HintPath>$(MISTAKEN_REFERENCES)\0Mistaken.API.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>..\dependencies-master\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>$(MISTAKEN_REFERENCES)\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp-Publicized">
-      <HintPath>..\dependencies-master\Assembly-CSharp-Publicized.dll</HintPath>
+      <HintPath>$(MISTAKEN_REFERENCES)\Assembly-CSharp-Publicized.dll</HintPath>
     </Reference>
     <Reference Include="Exiled.API">
-      <HintPath>..\dependencies-master\Exiled.API.dll</HintPath>
+      <HintPath>$(MISTAKEN_REFERENCES)\Exiled.API.dll</HintPath>
     </Reference>
     <Reference Include="Exiled.Events">
-      <HintPath>..\dependencies-master\Exiled.Events.dll</HintPath>
+      <HintPath>$(MISTAKEN_REFERENCES)\Exiled.Events.dll</HintPath>
     </Reference>
     <Reference Include="Mirror">
-      <HintPath>..\dependencies-master\Mirror.dll</HintPath>
+      <HintPath>$(MISTAKEN_REFERENCES)\Mirror.dll</HintPath>
     </Reference>
     <Reference Include="Mistaken.RoundLogger">
-      <HintPath>..\dependencies-master\Mistaken.RoundLogger.dll</HintPath>
+      <HintPath>$(MISTAKEN_REFERENCES)\Mistaken.RoundLogger.dll</HintPath>
     </Reference>
     <Reference Include="Mistaken.Updater">
-      <HintPath>..\dependencies-master\Mistaken.Updater.dll</HintPath>
+      <HintPath>$(MISTAKEN_REFERENCES)\Mistaken.Updater.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -65,7 +65,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\dependencies-master\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(MISTAKEN_REFERENCES)\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
