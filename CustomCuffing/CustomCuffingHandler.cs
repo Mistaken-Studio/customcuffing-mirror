@@ -30,15 +30,21 @@ namespace Mistaken.CustomCuffing
 
         public override void OnEnable()
         {
-            this.CuffedLimit.Clear();
             Exiled.Events.Handlers.Player.Handcuffing += this.Player_Handcuffing;
             Events.Handlers.CustomEvents.Uncuffing += this.Player_Uncuffing;
+            Exiled.Events.Handlers.Server.WaitingForPlayers += this.Server_WaitingForPlayers;
         }
 
         public override void OnDisable()
         {
             Exiled.Events.Handlers.Player.Handcuffing -= this.Player_Handcuffing;
             Events.Handlers.CustomEvents.Uncuffing -= this.Player_Uncuffing;
+            Exiled.Events.Handlers.Server.WaitingForPlayers -= this.Server_WaitingForPlayers;
+        }
+
+        private void Server_WaitingForPlayers()
+        {
+            this.CuffedLimit.Clear();
         }
 
         private void Player_Handcuffing(HandcuffingEventArgs ev)
