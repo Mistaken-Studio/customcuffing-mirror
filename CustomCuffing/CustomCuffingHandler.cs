@@ -1,4 +1,4 @@
-﻿// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 // <copyright file="CustomCuffingHandler.cs" company="Mistaken">
 // Copyright (c) Mistaken. All rights reserved.
 // </copyright>
@@ -63,6 +63,9 @@ namespace Mistaken.CustomCuffing
 
         private void Player_Uncuffing(Events.EventArgs.UncuffingEventArgs ev)
         {
+            if(!ev.IsAllowed)
+                return;
+
             if (ev.UnCuffer.IsScp)
             {
                 ev.IsAllowed = PluginHandler.Instance.Config.AllowScps;
