@@ -63,7 +63,7 @@ namespace Mistaken.CustomCuffing
 
         private void Player_Uncuffing(Events.EventArgs.UncuffingEventArgs ev)
         {
-            if(!ev.IsAllowed)
+            if (!ev.IsAllowed)
                 return;
 
             if (ev.UnCuffer.IsScp)
