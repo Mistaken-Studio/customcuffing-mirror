@@ -20,13 +20,11 @@ namespace Mistaken.CustomCuffing
     internal class CustomCuffingHandler : Module
     {
         public CustomCuffingHandler(PluginHandler plugin)
-    : base(plugin)
+            : base(plugin)
         {
         }
 
         public override string Name => "CustomCuffingHandler";
-
-        private readonly Dictionary<Player, int> CuffedLimit = new Dictionary<Player, int>();
 
         public override void OnEnable()
         {
@@ -42,30 +40,32 @@ namespace Mistaken.CustomCuffing
             Exiled.Events.Handlers.Server.WaitingForPlayers -= this.Server_WaitingForPlayers;
         }
 
+        private readonly Dictionary<Player, int> cuffedLimit = new Dictionary<Player, int>();
+
         private void Server_WaitingForPlayers()
         {
-            this.CuffedLimit.Clear();
+            this.cuffedLimit.Clear();
         }
 
         private void Player_Handcuffing(HandcuffingEventArgs ev)
         {
-            if (!this.CuffedLimit.ContainsKey(ev.Cuffer))
+            if (!this.cuffedLimit.ContainsKey(ev.Cuffer))
             {
-                this.CuffedLimit.Add(ev.Cuffer, 0);
+                this.cuffedLimit.Add(ev.Cuffer, 0);
             }
 
-            int limit = this.CuffedLimit[ev.Cuffer];
+            int limit = this.cuffedLimit[ev.Cuffer];
             if (limit >= PluginHandler.Instance.Config.CuffLimit)
             {
                 ev.IsAllowed = false;
                 return;
             }
-            else if (this.CuffedLimit[ev.Cuffer] == 0)
+            else if (this.cuffedLimit[ev.Cuffer] == 0)
             {
                 Timing.RunCoroutine(this.CuffedGUI(ev.Cuffer));
             }
 
-            this.CuffedLimit[ev.Cuffer]++;
+            this.cuffedLimit[ev.Cuffer]++;
             Timing.RunCoroutine(this.CuffedPlayerInfo(ev.Target));
         }
 
@@ -85,7 +85,7 @@ namespace Mistaken.CustomCuffing
             }
 
             if (ev.IsAllowed)
-                this.CuffedLimit[ev.Target.Cuffer]--;
+                this.cuffedLimit[ev.Target.Cuffer]--;
         }
 
         private IEnumerator<float> CuffedGUI(Player cuffer)
@@ -105,7 +105,7 @@ namespace Mistaken.CustomCuffing
                         }
                     }
 
-                    int limit = this.CuffedLimit[cuffer];
+                    int limit = this.cuffedLimit[cuffer];
                     if (cuffed.Count != 0)
                     {
                         cuffer.SetGUI($"cuffer-{cuffer.Nickname}", PseudoGUIPosition.BOTTOM, $"Cuffed Players: (<color=yellow>{limit}/{PluginHandler.Instance.Config.CuffLimit}</color>)<br><br>{string.Join("<br>", cuffed)}");
