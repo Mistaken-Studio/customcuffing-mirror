@@ -16,6 +16,6 @@ namespace Mistaken.CustomCuffing
         /// Gets or sets a message that appears when you hover on a Player when hes Cuffed.
         /// </summary>
         [Description("Message that appears when you hover on a Player when hes Cuffed")]
-        public string CuffedBy { get; set; } = "<color=red>Cuffed by {cuffer}</color>";
+        public string CuffedBy { get; set; } = "Cuffed by {cuffer}";
     }
 }

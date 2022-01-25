@@ -7,6 +7,7 @@
 using Exiled.API.Features;
 using Exiled.Events.EventArgs;
 using MEC;
+using Mistaken.Events;
 using Mistaken.API;
 using Mistaken.API.Diagnostics;
 using Mistaken.API.Extensions;
@@ -29,14 +30,15 @@ namespace Mistaken.CustomCuffing
 
         public override void OnEnable()
         {
+            CuffedLimit.Clear();
             Exiled.Events.Handlers.Player.Handcuffing += this.Player_Handcuffing;
-            //Exiled.Events.Handlers.Player.RemovingHandcuffs += this.Player_RemovingHandcuffs;
+            Events.Handlers.CustomEvents.Uncuffing += this.Player_Uncuffing;
         }
 
         public override void OnDisable()
         {
             Exiled.Events.Handlers.Player.Handcuffing -= this.Player_Handcuffing;
-            //Exiled.Events.Handlers.Player.RemovingHandcuffs -= this.Player_RemovingHandcuffs;
+            Events.Handlers.CustomEvents.Uncuffing -= this.Player_Uncuffing;
         }
 
         private void Player_Handcuffing(HandcuffingEventArgs ev)
@@ -59,17 +61,19 @@ namespace Mistaken.CustomCuffing
             Timing.RunCoroutine(CuffedPlayerInfo(ev.Target));
         }
 
-        /*private void Player_RemovingHandcuffs(RemovingHandcuffsEventArgs ev)
+        private void Player_Uncuffing(Events.EventArgs.UncuffingEventArgs ev)
         {
-            if (ev.Cuffer.IsScp)
+            if (ev.UnCuffer.IsScp)
             {
                 ev.IsAllowed = PluginHandler.Instance.Config.AllowScps;
             }
-            if (ev.Target.Cuffer.IsNTF && ev.Cuffer.IsNTF && ev.Cuffer != ev.Target.Cuffer)
+            if (ev.Target.Cuffer.IsNTF && ev.UnCuffer.IsNTF && ev.UnCuffer != ev.Target.Cuffer)
             {
                 ev.IsAllowed = PluginHandler.Instance.Config.AllowOtherMtfs;
             }
-        }*/
+            if (ev.IsAllowed)
+                CuffedLimit[ev.Target.Cuffer]--;
+        }
 
         private IEnumerator<float> CuffedGUI(Player cuffer)
         {
@@ -88,7 +92,7 @@ namespace Mistaken.CustomCuffing
                         }
                     }
 
-                    CuffedLimit.TryGetValue(cuffer, out int limit);
+                    int limit = CuffedLimit[cuffer];
                     if (cuffed.Count != 0)
                     {
                         cuffer.SetGUI($"cuffer-{cuffer.Nickname}", PseudoGUIPosition.BOTTOM, $"Cuffed Players: (<color=yellow>{limit}/{PluginHandler.Instance.Config.CuffLimit}</color>)<br><br>{string.Join("<br>", cuffed)}");
@@ -121,7 +125,6 @@ namespace Mistaken.CustomCuffing
                 else
                 {
                     CustomInfoHandler.Set(target, $"cuffed-{target.Nickname}", string.Empty);
-                    CuffedLimit[target.Cuffer]--;
                     break;
                 }
                 yield return Timing.WaitForSeconds(1);
