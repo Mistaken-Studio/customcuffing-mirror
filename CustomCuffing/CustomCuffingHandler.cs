@@ -5,6 +5,8 @@
 // -----------------------------------------------------------------------
 
 using System.Collections.Generic;
+using System.Linq;
+using Exiled.API.Extensions;
 using Exiled.API.Features;
 using Exiled.Events.EventArgs;
 using MEC;
@@ -54,13 +56,32 @@ namespace Mistaken.CustomCuffing
                 this.cuffedLimit.Add(ev.Cuffer, 0);
             }
 
-            int limit = this.cuffedLimit[ev.Cuffer];
-            if (limit >= PluginHandler.Instance.Config.CuffLimit)
+            int currentLimit = this.cuffedLimit[ev.Cuffer];
+            int limit = 0;
+
+            if (ev.Cuffer.HasItem(ItemType.ArmorLight))
+                limit = 1;
+            else if (ev.Cuffer.HasItem(ItemType.ArmorCombat))
+                limit = 2;
+            else if (ev.Cuffer.HasItem(ItemType.ArmorHeavy))
+                limit = 4;
+
+            if (currentLimit >= limit)
             {
                 ev.IsAllowed = false;
                 return;
             }
-            else if (this.cuffedLimit[ev.Cuffer] == 0)
+
+            this.Log.Debug($"Cuffer: {ev.Cuffer.ReferenceHub.playerMovementSync.PlayerVelocity} ({ev.Cuffer.ReferenceHub.playerMovementSync.PlayerVelocity != Vector3.zero})", PluginHandler.Instance.Config.VerbouseOutput);
+            this.Log.Debug($"Target: {ev.Target.ReferenceHub.playerMovementSync.PlayerVelocity} ({ev.Target.ReferenceHub.playerMovementSync.PlayerVelocity != Vector3.zero})", PluginHandler.Instance.Config.VerbouseOutput);
+            if (ev.Cuffer.ReferenceHub.playerMovementSync.PlayerVelocity != Vector3.zero || ev.Target.ReferenceHub.playerMovementSync.PlayerVelocity != Vector3.zero)
+            {
+                ev.IsAllowed = false;
+                this.Log.Debug("MOVING TARGETS, NOT GOOD :/", PluginHandler.Instance.Config.VerbouseOutput);
+                return;
+            }
+
+            if (this.cuffedLimit[ev.Cuffer] == 0)
             {
                 Timing.RunCoroutine(this.CuffedGUI(ev.Cuffer));
             }
@@ -79,7 +100,7 @@ namespace Mistaken.CustomCuffing
                 ev.IsAllowed = PluginHandler.Instance.Config.AllowScps;
             }
 
-            if (ev.Target.Cuffer.IsNTF && ev.UnCuffer.IsNTF && ev.UnCuffer != ev.Target.Cuffer)
+            if (ev.Target.Cuffer.IsNTF && (ev.UnCuffer?.IsNTF ?? false) && ev.UnCuffer != ev.Target.Cuffer)
             {
                 ev.IsAllowed = PluginHandler.Instance.Config.AllowOtherMtfs;
             }
@@ -105,10 +126,33 @@ namespace Mistaken.CustomCuffing
                         }
                     }
 
-                    int limit = this.cuffedLimit[cuffer];
+                    int currentLimit = this.cuffedLimit[cuffer];
+                    int limit = 0;
+
+                    if (cuffer.HasItem(ItemType.ArmorLight))
+                        limit = 1;
+                    else if (cuffer.HasItem(ItemType.ArmorCombat))
+                        limit = 2;
+                    else if (cuffer.HasItem(ItemType.ArmorHeavy))
+                        limit = 4;
+
+                    while (currentLimit > limit)
+                    {
+                        foreach (Player target in Player.List)
+                        {
+                            if (target.IsAlive && target.IsCuffed && target.Cuffer == cuffer)
+                            {
+                                currentLimit--;
+                                this.cuffedLimit[cuffer] = currentLimit;
+                                target.RemoveHandcuffs();
+                                break;
+                            }
+                        }
+                    }
+
                     if (cuffed.Count != 0)
                     {
-                        cuffer.SetGUI($"cuffer-{cuffer.Nickname}", PseudoGUIPosition.BOTTOM, $"Cuffed Players: (<color=yellow>{limit}/{PluginHandler.Instance.Config.CuffLimit}</color>)<br><br>{string.Join("<br>", cuffed)}");
+                        cuffer.SetGUI($"cuffer-{cuffer.Nickname}", PseudoGUIPosition.BOTTOM, $"Cuffed Players: (<color=yellow>{currentLimit}/{limit}</color>)<br><br>{string.Join("<br>", cuffed)}");
                     }
                     else
                     {
