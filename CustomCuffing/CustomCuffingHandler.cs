@@ -32,31 +32,17 @@ namespace Mistaken.CustomCuffing
         {
             Exiled.Events.Handlers.Player.Handcuffing += this.Player_Handcuffing;
             Events.Handlers.CustomEvents.Uncuffing += this.Player_Uncuffing;
-            Exiled.Events.Handlers.Server.WaitingForPlayers += this.Server_WaitingForPlayers;
         }
 
         public override void OnDisable()
         {
             Exiled.Events.Handlers.Player.Handcuffing -= this.Player_Handcuffing;
             Events.Handlers.CustomEvents.Uncuffing -= this.Player_Uncuffing;
-            Exiled.Events.Handlers.Server.WaitingForPlayers -= this.Server_WaitingForPlayers;
-        }
-
-        private readonly Dictionary<Player, int> cuffedLimit = new Dictionary<Player, int>();
-
-        private void Server_WaitingForPlayers()
-        {
-            this.cuffedLimit.Clear();
         }
 
         private void Player_Handcuffing(HandcuffingEventArgs ev)
         {
-            if (!this.cuffedLimit.ContainsKey(ev.Cuffer))
-            {
-                this.cuffedLimit.Add(ev.Cuffer, 0);
-            }
-
-            int currentLimit = this.cuffedLimit[ev.Cuffer];
+            int currentCuffed = this.GetCuffedPlayers(ev.Cuffer).Count();
             int limit = 0;
 
             if (ev.Cuffer.HasItem(ItemType.ArmorLight))
@@ -66,7 +52,7 @@ namespace Mistaken.CustomCuffing
             else if (ev.Cuffer.HasItem(ItemType.ArmorHeavy))
                 limit = 4;
 
-            if (currentLimit >= limit)
+            if (currentCuffed >= limit)
             {
                 ev.IsAllowed = false;
                 return;
@@ -81,12 +67,11 @@ namespace Mistaken.CustomCuffing
                 return;
             }
 
-            if (this.cuffedLimit[ev.Cuffer] == 0)
+            if (currentCuffed == 0)
             {
                 Timing.RunCoroutine(this.CuffedGUI(ev.Cuffer));
             }
 
-            this.cuffedLimit[ev.Cuffer]++;
             Timing.RunCoroutine(this.CuffedPlayerInfo(ev.Target));
         }
 
@@ -104,9 +89,6 @@ namespace Mistaken.CustomCuffing
             {
                 ev.IsAllowed = PluginHandler.Instance.Config.AllowOtherMtfs;
             }
-
-            if (ev.IsAllowed)
-                this.cuffedLimit[ev.Target.Cuffer]--;
         }
 
         private IEnumerator<float> CuffedGUI(Player cuffer)
@@ -117,16 +99,14 @@ namespace Mistaken.CustomCuffing
                 try
                 {
                     List<string> cuffed = new List<string>();
-                    foreach (Player target in Player.List)
+                    int currentCuffed = 0;
+                    foreach (Player target in this.GetCuffedPlayers(cuffer))
                     {
-                        if (target.IsAlive && target.IsCuffed && target.Cuffer == cuffer)
-                        {
-                            var distance = Vector3.Distance(cuffer.Position, target.Position);
-                            cuffed.Add($"<color=yellow>{target.Nickname}</color> - <color=yellow>{Mathf.RoundToInt(distance)}</color>m away");
-                        }
+                        var distance = Vector3.Distance(cuffer.Position, target.Position);
+                        cuffed.Add($"<color=yellow>{target.Nickname}</color> - <color=yellow>{Mathf.RoundToInt(distance)}</color>m away");
+                        currentCuffed++;
                     }
 
-                    int currentLimit = this.cuffedLimit[cuffer];
                     int limit = 0;
 
                     if (cuffer.HasItem(ItemType.ArmorLight))
@@ -136,14 +116,13 @@ namespace Mistaken.CustomCuffing
                     else if (cuffer.HasItem(ItemType.ArmorHeavy))
                         limit = 4;
 
-                    while (currentLimit > limit)
+                    while (currentCuffed > limit)
                     {
                         foreach (Player target in Player.List)
                         {
                             if (target.IsAlive && target.IsCuffed && target.Cuffer == cuffer)
                             {
-                                currentLimit--;
-                                this.cuffedLimit[cuffer] = currentLimit;
+                                currentCuffed--;
                                 target.RemoveHandcuffs();
                                 break;
                             }
@@ -152,7 +131,7 @@ namespace Mistaken.CustomCuffing
 
                     if (cuffed.Count != 0)
                     {
-                        cuffer.SetGUI($"cuffer-{cuffer.Nickname}", PseudoGUIPosition.BOTTOM, $"Cuffed Players: (<color=yellow>{currentLimit}/{limit}</color>)<br><br>{string.Join("<br>", cuffed)}");
+                        cuffer.SetGUI($"cuffer-{cuffer.Nickname}", PseudoGUIPosition.BOTTOM, $"Cuffed Players: (<color=yellow>{currentCuffed}/{limit}</color>)<br><br>{string.Join("<br>", cuffed)}");
                     }
                     else
                     {
@@ -189,5 +168,8 @@ namespace Mistaken.CustomCuffing
                 yield return Timing.WaitForSeconds(1);
             }
         }
+
+        private IEnumerable<Player> GetCuffedPlayers(Player cuffer)
+            => RealPlayers.List.Where(x => x.IsAlive && x.Cuffer == cuffer);
     }
 }
