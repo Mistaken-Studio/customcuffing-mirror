@@ -83,11 +83,15 @@ namespace Mistaken.CustomCuffing
             if (ev.UnCuffer.IsScp)
             {
                 ev.IsAllowed = PluginHandler.Instance.Config.AllowScps;
+                if (!ev.IsAllowed)
+                    ev.UnCuffer.SetGUI($"uncuffer-{ev.UnCuffer.Nickname}", PseudoGUIPosition.MIDDLE, "<color=red>You can't uncuff someone as an SCP!</color>", 5);
             }
 
             if (ev.Target.Cuffer.IsNTF && (ev.UnCuffer?.IsNTF ?? false) && ev.UnCuffer != ev.Target.Cuffer)
             {
                 ev.IsAllowed = PluginHandler.Instance.Config.AllowOtherMtfs;
+                if (!ev.IsAllowed)
+                    ev.UnCuffer.SetGUI($"uncuffer-{ev.UnCuffer.Nickname}", PseudoGUIPosition.MIDDLE, "<color=red>You can't uncuff someone who you did not handcuff!</color>", 5);
             }
         }
 
