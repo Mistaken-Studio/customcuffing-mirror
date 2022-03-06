@@ -68,6 +68,7 @@ namespace Mistaken.CustomCuffing
                 this.Log.Debug("MOVING CUFFER, NOT GOOD :/", PluginHandler.Instance.Config.VerbouseOutput);
                 return;
             }
+
             if (ev.Target.ReferenceHub.playerMovementSync.PlayerVelocity != Vector3.zero)
             {
                 ev.IsAllowed = false;
