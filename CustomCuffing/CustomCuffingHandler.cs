@@ -55,16 +55,25 @@ namespace Mistaken.CustomCuffing
             if (currentCuffed >= limit)
             {
                 ev.IsAllowed = false;
+                ev.Cuffer.SetGUI($"cuffer-{ev.Cuffer.Nickname}", PseudoGUIPosition.MIDDLE, $"<color=red>You can't cuff someone! (You can cuff max {limit} people)</color>", 5);
                 return;
             }
 
             this.Log.Debug($"Cuffer: {ev.Cuffer.ReferenceHub.playerMovementSync.PlayerVelocity} ({ev.Cuffer.ReferenceHub.playerMovementSync.PlayerVelocity != Vector3.zero})", PluginHandler.Instance.Config.VerbouseOutput);
             this.Log.Debug($"Target: {ev.Target.ReferenceHub.playerMovementSync.PlayerVelocity} ({ev.Target.ReferenceHub.playerMovementSync.PlayerVelocity != Vector3.zero})", PluginHandler.Instance.Config.VerbouseOutput);
-            if (ev.Cuffer.ReferenceHub.playerMovementSync.PlayerVelocity != Vector3.zero || ev.Target.ReferenceHub.playerMovementSync.PlayerVelocity != Vector3.zero)
+            if (ev.Cuffer.ReferenceHub.playerMovementSync.PlayerVelocity != Vector3.zero)
             {
                 ev.IsAllowed = false;
-                this.Log.Debug("MOVING TARGETS, NOT GOOD :/", PluginHandler.Instance.Config.VerbouseOutput);
+                ev.Cuffer.SetGUI($"cuffer-{ev.Cuffer.Nickname}", PseudoGUIPosition.MIDDLE, $"<color=red>You can't cuff someone! (You're moving)</color>", 5);
+                this.Log.Debug("MOVING CUFFER, NOT GOOD :/", PluginHandler.Instance.Config.VerbouseOutput);
                 return;
+            }
+
+            if (ev.Target.ReferenceHub.playerMovementSync.PlayerVelocity != Vector3.zero)
+            {
+                ev.IsAllowed = false;
+                ev.Cuffer.SetGUI($"cuffer-{ev.Cuffer.Nickname}", PseudoGUIPosition.MIDDLE, $"<color=red>You can't cuff someone! (Your Target is moving)</color>", 5);
+                this.Log.Debug("MOVING TARGET, NOT GOOD :/", PluginHandler.Instance.Config.VerbouseOutput);
             }
 
             if (currentCuffed == 0)
