@@ -5,6 +5,7 @@
 // -----------------------------------------------------------------------
 
 using System;
+using System.Linq;
 using Exiled.API.Enums;
 using Exiled.API.Features;
 
@@ -36,6 +37,7 @@ namespace Mistaken.CustomCuffing
             new CustomCuffingHandler(this);
 
             API.Diagnostics.Module.OnEnable(this);
+            Events.Handlers.CustomEvents.LoadedPlugins += this.CustomEvents_LoadedPlugins;
 
             base.OnEnabled();
         }
@@ -44,10 +46,17 @@ namespace Mistaken.CustomCuffing
         public override void OnDisabled()
         {
             API.Diagnostics.Module.OnDisable(this);
+            Events.Handlers.CustomEvents.LoadedPlugins -= this.CustomEvents_LoadedPlugins;
 
             base.OnDisabled();
         }
 
         internal static PluginHandler Instance { get; private set; }
+
+        private void CustomEvents_LoadedPlugins()
+        {
+            if (Exiled.Loader.Loader.Plugins.Any(x => x.Name == "BetterSCP-SCP049"))
+                BetterScp049Integration.IsActive = true;
+        }
     }
 }
