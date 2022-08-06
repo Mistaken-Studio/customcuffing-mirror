@@ -162,7 +162,7 @@ namespace Mistaken.CustomCuffing
         private IEnumerator<float> CuffedPlayerInfo(Player target)
         {
             yield return Timing.WaitForSeconds(1);
-            while (target.IsConnected && target.IsAlive)
+            while (target.IsConnected)
             {
                 if (target.IsCuffed)
                 {
