@@ -16,12 +16,12 @@ namespace Mistaken.CustomCuffing
         static BetterScp049Integration()
         {
             if (IsActive)
-            {
+    {
                 Disarmed049 = Mistaken.BetterSCP.SCP049.Commands.DisarmCommand.DisarmedScps;
                 Cuffed049 = Mistaken.BetterSCP.SCP049.Commands.DisarmCommand.Cuffing049;
             }
             else
-            {
+        {
                 Disarmed049 = new Dictionary<Player, Player>();
             }
         }
