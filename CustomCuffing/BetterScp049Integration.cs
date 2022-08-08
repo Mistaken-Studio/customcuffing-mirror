@@ -4,7 +4,6 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using Exiled.API.Features;
 using Mistaken.API.Diagnostics;
@@ -13,27 +12,21 @@ namespace Mistaken.CustomCuffing
 {
     internal static class BetterScp049Integration
     {
-        static BetterScp049Integration()
-        {
-            if (IsActive)
-    {
-                Disarmed049 = Mistaken.BetterSCP.SCP049.Commands.DisarmCommand.DisarmedScps;
-                Cuffed049 = Mistaken.BetterSCP.SCP049.Commands.DisarmCommand.Cuffing049;
-            }
-            else
-        {
-                Disarmed049 = new Dictionary<Player, Player>();
-            }
-        }
-
         public static bool IsActive { get; set; } = false;
 
-        public static Dictionary<Player, Player> Disarmed049 { get; set; }
+        public static Dictionary<Player, Player> Disarmed049 { get; set; } = new Dictionary<Player, Player>();
 
-        public static Action<(Player, Player)> Cuffed049 { get; set; } = (values) =>
+        public static void Init()
         {
-            Module.RunSafeCoroutine(CustomCuffingHandler.CufferGUI(values.Item1), "BetterScp049Integration.cuffed049");
-            Module.RunSafeCoroutine(CustomCuffingHandler.CuffedPlayerInfo(values.Item2), "BetterScp049Integration.cuffed049");
-        };
+            IsActive = true;
+            Disarmed049 = Mistaken.BetterSCP.SCP049.Commands.DisarmCommand.DisarmedScps;
+            Mistaken.BetterSCP.SCP049.Commands.DisarmCommand.Cuffed049 += DisarmCommand_Cuffed049;
+        }
+
+        private static void DisarmCommand_Cuffed049(object sender, (Player Cuffer, Player Scp049) e)
+        {
+            CustomCuffingHandler.Instance.RunCoroutine(CustomCuffingHandler.CufferGUI(e.Cuffer), "BetterScp049Integration.cuffed049");
+            CustomCuffingHandler.Instance.RunCoroutine(CustomCuffingHandler.CuffedPlayerInfo(e.Scp049), "BetterScp049Integration.cuffed049");
+        }
     }
 }

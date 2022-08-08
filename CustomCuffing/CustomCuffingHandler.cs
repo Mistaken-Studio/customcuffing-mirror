@@ -86,9 +86,13 @@ namespace Mistaken.CustomCuffing
             yield return Timing.WaitForSeconds(1);
             while (target.IsConnected)
             {
-                if (target.IsCuffed || (BetterScp049Integration.IsActive && BetterScp049Integration.Disarmed049.ContainsValue(target)))
+                if (target.IsCuffed)
                 {
                     CustomInfoHandler.Set(target, $"cuffed-{target.Nickname}", PluginHandler.Instance.Translation.CuffedBy.Replace("{cuffer}", target.Cuffer.Nickname));
+                }
+                else if (BetterScp049Integration.IsActive && BetterScp049Integration.Disarmed049.ContainsValue(target))
+                {
+                    CustomInfoHandler.Set(target, $"cuffed-{target.Nickname}", PluginHandler.Instance.Translation.CuffedBy.Replace("{cuffer}", BetterScp049Integration.Disarmed049.First(x => x.Value == target).Key.Nickname));
                 }
                 else
                 {

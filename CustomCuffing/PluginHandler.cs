@@ -36,8 +36,9 @@ namespace Mistaken.CustomCuffing
 
             new CustomCuffingHandler(this);
 
-            API.Diagnostics.Module.OnEnable(this);
             Events.Handlers.CustomEvents.LoadedPlugins += this.CustomEvents_LoadedPlugins;
+
+            API.Diagnostics.Module.OnEnable(this);
 
             base.OnEnabled();
         }
@@ -45,8 +46,9 @@ namespace Mistaken.CustomCuffing
         /// <inheritdoc/>
         public override void OnDisabled()
         {
-            API.Diagnostics.Module.OnDisable(this);
             Events.Handlers.CustomEvents.LoadedPlugins -= this.CustomEvents_LoadedPlugins;
+
+            API.Diagnostics.Module.OnDisable(this);
 
             base.OnDisabled();
         }
@@ -56,7 +58,7 @@ namespace Mistaken.CustomCuffing
         private void CustomEvents_LoadedPlugins()
         {
             if (Exiled.Loader.Loader.Plugins.Any(x => x.Name == "BetterSCP-SCP049"))
-                BetterScp049Integration.IsActive = true;
+                BetterScp049Integration.Init();
         }
     }
 }
