@@ -39,9 +39,15 @@ namespace Mistaken.CustomCuffing
 
                     if (BetterScp049Integration.IsActive && BetterScp049Integration.Disarmed049.TryGetValue(cuffer, out var scp))
                     {
-                        var distance = Vector3.Distance(cuffer.Position, scp.Position);
-                        cuffed.Add($"<color=yellow>{scp.Nickname}</color> - <color=yellow>{Mathf.RoundToInt(distance)}</color>m away");
-                        currentCuffed++;
+                        try
+                        {
+                            var distance = Vector3.Distance(cuffer.Position, scp.Position);
+                            cuffed.Add($"<color=yellow>{scp.Nickname}</color> - <color=yellow>{Mathf.RoundToInt(distance)}</color>m away");
+                            currentCuffed++;
+                        }
+                        catch
+                        {
+                        }
                     }
 
                     var limit = GetCuffingLimit(cuffer);
@@ -92,7 +98,13 @@ namespace Mistaken.CustomCuffing
                 }
                 else if (BetterScp049Integration.IsActive && BetterScp049Integration.Disarmed049.ContainsValue(target))
                 {
-                    CustomInfoHandler.Set(target, $"cuffed-{target.Nickname}", PluginHandler.Instance.Translation.CuffedBy.Replace("{cuffer}", BetterScp049Integration.Disarmed049.First(x => x.Value == target).Key.Nickname));
+                    try
+                    {
+                        CustomInfoHandler.Set(target, $"cuffed-{target.Nickname}", PluginHandler.Instance.Translation.CuffedBy.Replace("{cuffer}", BetterScp049Integration.Disarmed049.First(x => x.Value == target).Key.Nickname));
+                    }
+                    catch
+                    {
+                    }
                 }
                 else
                 {
