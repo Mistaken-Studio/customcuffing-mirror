@@ -21,9 +21,105 @@ namespace Mistaken.CustomCuffing
 {
     internal class CustomCuffingHandler : Module
     {
+        public static IEnumerator<float> CufferGUI(Player cuffer)
+        {
+            yield return Timing.WaitForSeconds(1);
+            while (cuffer.IsConnected && cuffer.IsAlive)
+            {
+                try
+                {
+                    List<string> cuffed = new List<string>();
+                    int currentCuffed = 0;
+                    foreach (Player target in GetCuffedPlayers(cuffer))
+                    {
+                        var distance = Vector3.Distance(cuffer.Position, target.Position);
+                        cuffed.Add($"<color=yellow>{target.Nickname}</color> - <color=yellow>{Mathf.RoundToInt(distance)}</color>m away");
+                        currentCuffed++;
+                    }
+
+                    if (BetterScp049Integration.IsActive && BetterScp049Integration.Disarmed049.TryGetValue(cuffer, out var scp))
+                    {
+                        try
+                        {
+                            var distance = Vector3.Distance(cuffer.Position, scp.Position);
+                            cuffed.Add($"<color=yellow>{scp.Nickname}</color> - <color=yellow>{Mathf.RoundToInt(distance)}</color>m away");
+                            currentCuffed++;
+                        }
+                        catch
+                        {
+                        }
+                    }
+
+                    var limit = GetCuffingLimit(cuffer);
+                    while (currentCuffed > limit)
+                    {
+                        foreach (Player target in Player.List)
+                        {
+                            if (target.IsAlive && target.IsCuffed && target.Cuffer == cuffer)
+                            {
+                                currentCuffed--;
+                                target.RemoveHandcuffs();
+                                break;
+                            }
+                            else if (BetterScp049Integration.IsActive && BetterScp049Integration.Disarmed049.ContainsKey(cuffer))
+                                BetterScp049Integration.Disarmed049.Remove(cuffer);
+                        }
+                    }
+
+                    if (cuffed.Count != 0)
+                    {
+                        cuffer.SetGUI($"cuffer-{cuffer.Nickname}", PseudoGUIPosition.BOTTOM, $"Cuffed Players: (<color=yellow>{currentCuffed}/{limit}</color>)<br><br>{string.Join("<br>", cuffed)}");
+                    }
+                    else
+                    {
+                        cuffer.SetGUI($"cuffer-{cuffer.Nickname}", PseudoGUIPosition.BOTTOM, null);
+                        break;
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Instance.Log.Error(ex);
+                }
+
+                yield return Timing.WaitForSeconds(1);
+            }
+
+            cuffer.SetGUI($"cuffer-{cuffer.Nickname}", PseudoGUIPosition.BOTTOM, null);
+        }
+
+        public static IEnumerator<float> CuffedPlayerInfo(Player target)
+        {
+            yield return Timing.WaitForSeconds(1);
+            while (target.IsConnected)
+            {
+                if (target.IsCuffed)
+                {
+                    CustomInfoHandler.Set(target, $"cuffed-{target.Nickname}", PluginHandler.Instance.Translation.CuffedBy.Replace("{cuffer}", target.Cuffer.Nickname));
+                }
+                else if (BetterScp049Integration.IsActive && BetterScp049Integration.Disarmed049.ContainsValue(target))
+                {
+                    try
+                    {
+                        CustomInfoHandler.Set(target, $"cuffed-{target.Nickname}", PluginHandler.Instance.Translation.CuffedBy.Replace("{cuffer}", BetterScp049Integration.Disarmed049.First(x => x.Value == target).Key.Nickname));
+                    }
+                    catch
+                    {
+                    }
+                }
+                else
+                {
+                    CustomInfoHandler.Set(target, $"cuffed-{target.Nickname}", string.Empty);
+                    break;
+                }
+
+                yield return Timing.WaitForSeconds(1);
+            }
+        }
+
         public CustomCuffingHandler(PluginHandler plugin)
             : base(plugin)
         {
+            Instance = this;
         }
 
         public override string Name => "CustomCuffingHandler";
@@ -40,18 +136,31 @@ namespace Mistaken.CustomCuffing
             Events.Handlers.CustomEvents.Uncuffing -= this.Player_Uncuffing;
         }
 
+        internal static CustomCuffingHandler Instance { get; private set; }
+
+        private static IEnumerable<Player> GetCuffedPlayers(Player cuffer)
+            => RealPlayers.List.Where(x => x.IsAlive && x.Cuffer == cuffer);
+
+        private static ushort GetCuffingLimit(Player cuffer)
+        {
+            ushort limit = 0;
+
+            if (cuffer.HasItem(ItemType.ArmorLight))
+                limit = 1;
+            else if (cuffer.HasItem(ItemType.ArmorCombat))
+                limit = 2;
+            else if (cuffer.HasItem(ItemType.ArmorHeavy))
+                limit = 4;
+            return limit;
+        }
+
         private void Player_Handcuffing(HandcuffingEventArgs ev)
         {
-            int currentCuffed = this.GetCuffedPlayers(ev.Cuffer).Count();
-            int limit = 0;
+            int currentCuffed = GetCuffedPlayers(ev.Cuffer).Count();
+            if (BetterScp049Integration.IsActive && BetterScp049Integration.Disarmed049.ContainsKey(ev.Cuffer))
+                currentCuffed += 1;
 
-            if (ev.Cuffer.HasItem(ItemType.ArmorLight))
-                limit = 1;
-            else if (ev.Cuffer.HasItem(ItemType.ArmorCombat))
-                limit = 2;
-            else if (ev.Cuffer.HasItem(ItemType.ArmorHeavy))
-                limit = 4;
-
+            var limit = GetCuffingLimit(ev.Cuffer);
             if (currentCuffed >= limit)
             {
                 ev.IsAllowed = false;
@@ -78,10 +187,10 @@ namespace Mistaken.CustomCuffing
 
             if (currentCuffed == 0)
             {
-                Timing.RunCoroutine(this.CuffedGUI(ev.Cuffer));
+                Timing.RunCoroutine(CufferGUI(ev.Cuffer));
             }
 
-            Timing.RunCoroutine(this.CuffedPlayerInfo(ev.Target));
+            Timing.RunCoroutine(CuffedPlayerInfo(ev.Target));
         }
 
         private void Player_Uncuffing(Events.EventArgs.UncuffingEventArgs ev)
@@ -99,86 +208,5 @@ namespace Mistaken.CustomCuffing
                 ev.IsAllowed = PluginHandler.Instance.Config.AllowOtherMtfs;
             }
         }
-
-        private IEnumerator<float> CuffedGUI(Player cuffer)
-        {
-            yield return Timing.WaitForSeconds(1);
-            while (cuffer.IsConnected && cuffer.IsAlive)
-            {
-                try
-                {
-                    List<string> cuffed = new List<string>();
-                    int currentCuffed = 0;
-                    foreach (Player target in this.GetCuffedPlayers(cuffer))
-                    {
-                        var distance = Vector3.Distance(cuffer.Position, target.Position);
-                        cuffed.Add($"<color=yellow>{target.Nickname}</color> - <color=yellow>{Mathf.RoundToInt(distance)}</color>m away");
-                        currentCuffed++;
-                    }
-
-                    int limit = 0;
-
-                    if (cuffer.HasItem(ItemType.ArmorLight))
-                        limit = 1;
-                    else if (cuffer.HasItem(ItemType.ArmorCombat))
-                        limit = 2;
-                    else if (cuffer.HasItem(ItemType.ArmorHeavy))
-                        limit = 4;
-
-                    while (currentCuffed > limit)
-                    {
-                        foreach (Player target in Player.List)
-                        {
-                            if (target.IsAlive && target.IsCuffed && target.Cuffer == cuffer)
-                            {
-                                currentCuffed--;
-                                target.RemoveHandcuffs();
-                                break;
-                            }
-                        }
-                    }
-
-                    if (cuffed.Count != 0)
-                    {
-                        cuffer.SetGUI($"cuffer-{cuffer.Nickname}", PseudoGUIPosition.BOTTOM, $"Cuffed Players: (<color=yellow>{currentCuffed}/{limit}</color>)<br><br>{string.Join("<br>", cuffed)}");
-                    }
-                    else
-                    {
-                        cuffer.SetGUI($"cuffer-{cuffer.Nickname}", PseudoGUIPosition.BOTTOM, null);
-                        break;
-                    }
-                }
-                catch (System.Exception ex)
-                {
-                    this.Log.Error(ex);
-                }
-
-                yield return Timing.WaitForSeconds(1);
-            }
-
-            cuffer.SetGUI($"cuffer-{cuffer.Nickname}", PseudoGUIPosition.BOTTOM, null);
-        }
-
-        private IEnumerator<float> CuffedPlayerInfo(Player target)
-        {
-            yield return Timing.WaitForSeconds(1);
-            while (target.IsConnected)
-            {
-                if (target.IsCuffed)
-                {
-                    CustomInfoHandler.Set(target, $"cuffed-{target.Nickname}", PluginHandler.Instance.Translation.CuffedBy.Replace("{cuffer}", target.Cuffer.Nickname));
-                }
-                else
-                {
-                    CustomInfoHandler.Set(target, $"cuffed-{target.Nickname}", string.Empty);
-                    break;
-                }
-
-                yield return Timing.WaitForSeconds(1);
-            }
-        }
-
-        private IEnumerable<Player> GetCuffedPlayers(Player cuffer)
-            => RealPlayers.List.Where(x => x.IsAlive && x.Cuffer == cuffer);
     }
 }
