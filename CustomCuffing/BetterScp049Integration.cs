@@ -6,7 +6,6 @@
 
 using System.Collections.Generic;
 using Exiled.API.Features;
-using Mistaken.API.Diagnostics;
 
 namespace Mistaken.CustomCuffing
 {
