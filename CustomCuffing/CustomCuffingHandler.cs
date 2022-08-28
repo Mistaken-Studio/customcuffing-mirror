@@ -6,7 +6,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Exiled.API.Extensions;
 using Exiled.API.Features;
 using Exiled.Events.EventArgs;
 using MEC;
@@ -14,7 +13,6 @@ using Mistaken.API;
 using Mistaken.API.Diagnostics;
 using Mistaken.API.Extensions;
 using Mistaken.API.GUI;
-using Mistaken.Events;
 using UnityEngine;
 
 namespace Mistaken.CustomCuffing
@@ -33,7 +31,7 @@ namespace Mistaken.CustomCuffing
                     foreach (Player target in GetCuffedPlayers(cuffer))
                     {
                         var distance = Vector3.Distance(cuffer.Position, target.Position);
-                        cuffed.Add($"<color=yellow>{target.Nickname}</color> - <color=yellow>{Mathf.RoundToInt(distance)}</color>m away");
+                        cuffed.Add(string.Format(PluginHandler.Instance.Translation.CufferElementOfListInfo, target.GetDisplayName(), Mathf.RoundToInt(distance)));
                         currentCuffed++;
                     }
 
@@ -42,7 +40,7 @@ namespace Mistaken.CustomCuffing
                         try
                         {
                             var distance = Vector3.Distance(cuffer.Position, scp.Position);
-                            cuffed.Add($"<color=yellow>{scp.Nickname}</color> - <color=yellow>{Mathf.RoundToInt(distance)}</color>m away");
+                            cuffed.Add(string.Format(PluginHandler.Instance.Translation.CufferElementOfListInfo, scp.GetDisplayName(), Mathf.RoundToInt(distance)));
                             currentCuffed++;
                         }
                         catch
@@ -68,7 +66,7 @@ namespace Mistaken.CustomCuffing
 
                     if (cuffed.Count != 0)
                     {
-                        cuffer.SetGUI($"cuffer-{cuffer.Nickname}", PseudoGUIPosition.BOTTOM, $"Cuffed Players: (<color=yellow>{currentCuffed}/{limit}</color>)<br><br>{string.Join("<br>", cuffed)}");
+                        cuffer.SetGUI($"cuffer-{cuffer.Nickname}", PseudoGUIPosition.BOTTOM, string.Format(PluginHandler.Instance.Translation.CufferListOfTargetsInfo, currentCuffed, limit, string.Join("<br>", cuffed)));
                     }
                     else
                     {
@@ -94,13 +92,13 @@ namespace Mistaken.CustomCuffing
             {
                 if (target.IsCuffed)
                 {
-                    CustomInfoHandler.Set(target, $"cuffed-{target.Nickname}", PluginHandler.Instance.Translation.CuffedBy.Replace("{cuffer}", target.Cuffer.Nickname));
+                    CustomInfoHandler.Set(target, $"cuffed-{target.Nickname}", string.Format(PluginHandler.Instance.Translation.CuffedBy, target.Cuffer.GetDisplayName()));
                 }
                 else if (BetterScp049Integration.IsActive && BetterScp049Integration.Disarmed049.ContainsValue(target))
                 {
                     try
                     {
-                        CustomInfoHandler.Set(target, $"cuffed-{target.Nickname}", PluginHandler.Instance.Translation.CuffedBy.Replace("{cuffer}", BetterScp049Integration.Disarmed049.First(x => x.Value == target).Key.Nickname));
+                        CustomInfoHandler.Set(target, $"cuffed-{target.Nickname}", string.Format(PluginHandler.Instance.Translation.CuffedBy, BetterScp049Integration.Disarmed049.First(x => x.Value == target).Key.GetDisplayName()));
                     }
                     catch
                     {
@@ -127,12 +125,14 @@ namespace Mistaken.CustomCuffing
         public override void OnEnable()
         {
             Exiled.Events.Handlers.Player.Handcuffing += this.Player_Handcuffing;
+            Exiled.Events.Handlers.Player.Hurting += this.Player_Hurting;
             Events.Handlers.CustomEvents.Uncuffing += this.Player_Uncuffing;
         }
 
         public override void OnDisable()
         {
             Exiled.Events.Handlers.Player.Handcuffing -= this.Player_Handcuffing;
+            Exiled.Events.Handlers.Player.Hurting -= this.Player_Hurting;
             Events.Handlers.CustomEvents.Uncuffing -= this.Player_Uncuffing;
         }
 
@@ -164,7 +164,7 @@ namespace Mistaken.CustomCuffing
             if (currentCuffed >= limit)
             {
                 ev.IsAllowed = false;
-                ev.Cuffer.SetGUI($"cuffer-{ev.Cuffer.Nickname}", PseudoGUIPosition.MIDDLE, $"<color=red>You can't cuff someone! (You can cuff max {limit} people)</color>", 5);
+                ev.Cuffer.SetGUI($"cuffer-{ev.Cuffer.Nickname}", PseudoGUIPosition.MIDDLE, string.Format(PluginHandler.Instance.Translation.CuffingLimitInfo, limit), 5);
                 return;
             }
 
@@ -173,7 +173,7 @@ namespace Mistaken.CustomCuffing
             if (ev.Cuffer.ReferenceHub.playerMovementSync.PlayerVelocity != Vector3.zero)
             {
                 ev.IsAllowed = false;
-                ev.Cuffer.SetGUI($"cuffer-{ev.Cuffer.Nickname}", PseudoGUIPosition.MIDDLE, $"<color=red>You can't cuff someone! (You're moving)</color>", 5);
+                ev.Cuffer.SetGUI($"cuffer-{ev.Cuffer.Nickname}", PseudoGUIPosition.MIDDLE, PluginHandler.Instance.Translation.CufferMovingWhenCuffingInfo, 5);
                 this.Log.Debug("MOVING CUFFER, NOT GOOD :/", PluginHandler.Instance.Config.VerbouseOutput);
                 return;
             }
@@ -181,7 +181,7 @@ namespace Mistaken.CustomCuffing
             if (ev.Target.ReferenceHub.playerMovementSync.PlayerVelocity != Vector3.zero)
             {
                 ev.IsAllowed = false;
-                ev.Cuffer.SetGUI($"cuffer-{ev.Cuffer.Nickname}", PseudoGUIPosition.MIDDLE, $"<color=red>You can't cuff someone! (Your Target is moving)</color>", 5);
+                ev.Cuffer.SetGUI($"cuffer-{ev.Cuffer.Nickname}", PseudoGUIPosition.MIDDLE, PluginHandler.Instance.Translation.TargetMovingWhenCuffingInfo, 5);
                 this.Log.Debug("MOVING TARGET, NOT GOOD :/", PluginHandler.Instance.Config.VerbouseOutput);
             }
 
@@ -191,6 +191,37 @@ namespace Mistaken.CustomCuffing
             }
 
             Timing.RunCoroutine(CuffedPlayerInfo(ev.Target));
+        }
+
+        private void Player_Hurting(HurtingEventArgs ev)
+        {
+            if (!ev.IsAllowed)
+                return;
+
+            if (ev.Attacker != null && ev.Target != null)
+            {
+                var cuffer = ev.Target.Cuffer;
+                if (cuffer == ev.Attacker)
+                    return;
+
+                if (cuffer != null && cuffer.Role.Side == ev.Attacker.Role.Side)
+                {
+                    ev.Attacker.Broadcast(5, string.Format(PluginHandler.Instance.Translation.AttackingCuffedInfo, ev.Target.GetDisplayName(), cuffer.GetDisplayName()), shouldClearPrevious: true);
+                    ev.Target.Broadcast(5, string.Format(PluginHandler.Instance.Translation.CuffedAttackedInfo, ev.Attacker.GetDisplayName()), shouldClearPrevious: true);
+                }
+                else if (BetterScp049Integration.Disarmed049.ContainsValue(ev.Target))
+                {
+                    var kvp = BetterScp049Integration.Disarmed049.First(x => x.Value == ev.Target);
+                    if (kvp.Key == ev.Attacker)
+                        return;
+
+                    if (kvp.Key.Role.Side == ev.Attacker.Role.Side)
+                    {
+                        ev.Attacker.Broadcast(5, string.Format(PluginHandler.Instance.Translation.AttackingCuffedInfo, ev.Target.GetDisplayName(), kvp.Key.GetDisplayName()), shouldClearPrevious: true);
+                        ev.Target.Broadcast(5, string.Format(PluginHandler.Instance.Translation.CuffedAttackedInfo, ev.Attacker.GetDisplayName()), shouldClearPrevious: true);
+                    }
+                }
+            }
         }
 
         private void Player_Uncuffing(Events.EventArgs.UncuffingEventArgs ev)
