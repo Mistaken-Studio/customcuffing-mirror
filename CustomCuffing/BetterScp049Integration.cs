@@ -13,7 +13,7 @@ namespace Mistaken.CustomCuffing
     {
         public static bool IsActive { get; set; } = false;
 
-        public static Dictionary<Player, Player> Disarmed049 { get; set; } = new Dictionary<Player, Player>();
+        public static Dictionary<Player, Player> Disarmed049 { get; set; } = new();
 
         public static void Init()
         {

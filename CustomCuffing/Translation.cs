@@ -9,7 +9,7 @@ using Exiled.API.Interfaces;
 
 namespace Mistaken.CustomCuffing
 {
-    internal class Translation : ITranslation
+    internal sealed class Translation : ITranslation
     {
         [Description("Message that appears when you hover on a Player when hes Cuffed")]
         public string CuffedBy { get; set; } = "Cuffed by {0}";

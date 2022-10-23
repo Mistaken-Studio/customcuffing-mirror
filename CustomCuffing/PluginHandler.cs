@@ -8,10 +8,11 @@ using System;
 using System.Linq;
 using Exiled.API.Enums;
 using Exiled.API.Features;
+using Mistaken.Updater.API.Config;
 
 namespace Mistaken.CustomCuffing
 {
-    internal class PluginHandler : Plugin<Config, Translation>
+    internal sealed class PluginHandler : Plugin<Config, Translation>, IAutoUpdateablePlugin
     {
         public override string Author => "Mistaken Devs";
 
@@ -21,7 +22,13 @@ namespace Mistaken.CustomCuffing
 
         public override PluginPriority Priority => PluginPriority.Medium;
 
-        public override Version RequiredExiledVersion => new Version(5, 2, 2);
+        public override Version RequiredExiledVersion => new(5, 2, 2);
+
+        public AutoUpdateConfig AutoUpdateConfig => new()
+        {
+            Type = SourceType.GITLAB,
+            Url = "https://git.mistaken.pl/api/v4/projects/80",
+        };
 
         public override void OnEnabled()
         {
