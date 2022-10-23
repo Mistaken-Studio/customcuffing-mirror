@@ -33,6 +33,7 @@ namespace Mistaken.CustomCuffing
                     {
                         // var distance = Vector3.Distance(cuffer.Position, target.Position);
                         // cuffed.Add(string.Format(PluginHandler.Instance.Translation.CufferElementOfListInfo, target.GetDisplayName(), Mathf.RoundToInt(distance)));
+                        cuffed.Add($"<color=yellow>{target.GetDisplayName()}</color>");
                         currentCuffed++;
                     }
 
@@ -42,6 +43,7 @@ namespace Mistaken.CustomCuffing
                         {
                             // var distance = Vector3.Distance(cuffer.Position, scp.Position);
                             // cuffed.Add(string.Format(PluginHandler.Instance.Translation.CufferElementOfListInfo, scp.GetDisplayName(), Mathf.RoundToInt(distance)));
+                            cuffed.Add($"<color=yellow>{scp.GetDisplayName()}</color>");
                             currentCuffed++;
                         }
                         catch
