@@ -22,6 +22,7 @@ namespace Mistaken.CustomCuffing
         public static IEnumerator<float> CufferGUI(Player cuffer)
         {
             yield return Timing.WaitForSeconds(1);
+
             while (cuffer.IsConnected && cuffer.IsAlive)
             {
                 try
@@ -158,7 +159,7 @@ namespace Mistaken.CustomCuffing
             ushort limit = 0;
 
             if (cuffer.HasItem(ItemType.ArmorLight))
-                limit = 1;
+                limit = 2;
             else if (cuffer.HasItem(ItemType.ArmorCombat))
                 limit = 2;
             else if (cuffer.HasItem(ItemType.ArmorHeavy))
