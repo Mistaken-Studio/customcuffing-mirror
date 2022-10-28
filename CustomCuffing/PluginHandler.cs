@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using Exiled.API.Enums;
 using Exiled.API.Features;
+using HarmonyLib;
 using Mistaken.Updater.API.Config;
 
 namespace Mistaken.CustomCuffing
@@ -34,6 +35,8 @@ namespace Mistaken.CustomCuffing
         {
             Instance = this;
 
+            _harmony.PatchAll();
+
             new CustomCuffingHandler(this);
 
             Events.Handlers.CustomEvents.LoadedPlugins += this.CustomEvents_LoadedPlugins;
@@ -45,6 +48,8 @@ namespace Mistaken.CustomCuffing
 
         public override void OnDisabled()
         {
+            _harmony.UnpatchAll();
+
             Events.Handlers.CustomEvents.LoadedPlugins -= this.CustomEvents_LoadedPlugins;
 
             API.Diagnostics.Module.OnDisable(this);
@@ -53,6 +58,8 @@ namespace Mistaken.CustomCuffing
         }
 
         internal static PluginHandler Instance { get; private set; }
+
+        private static readonly Harmony _harmony = new("com.mistaken.customcuffing");
 
         private void CustomEvents_LoadedPlugins()
         {
