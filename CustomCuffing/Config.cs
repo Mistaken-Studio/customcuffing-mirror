@@ -19,6 +19,9 @@ namespace Mistaken.CustomCuffing
         [Description("How many people one player can disarm")]
         public int CuffLimit { get; set; } = 1;
 
+        [Description("After what distance from the disarming player should the cuffed player be uncuffed")]
+        public float AutoDisarmDistance { get; set; } = 90f;
+
         [Description("Can Scps release disarmed players")]
         public bool AllowScps { get; set; } = false;
 
