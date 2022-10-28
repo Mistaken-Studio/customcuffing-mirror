@@ -22,16 +22,12 @@ namespace Mistaken.CustomCuffing
 
             int index = newInstructions.FindIndex(x => x.opcode == OpCodes.Ldc_R4);
             float squared = Mathf.Pow(PluginHandler.Instance.Config.AutoDisarmDistance, 2f);
-            Log.Debug(squared);
 
             newInstructions.RemoveAt(index);
             newInstructions.Insert(index, new(OpCodes.Ldc_R4, squared));
 
             for (int i = 0; i < newInstructions.Count; i++)
-            {
-                Log.Debug(newInstructions[i]);
                 yield return newInstructions[i];
-            }
 
             NorthwoodLib.Pools.ListPool<CodeInstruction>.Shared.Return(newInstructions);
         }
